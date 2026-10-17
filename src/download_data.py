@@ -1,6 +1,7 @@
 from pathlib import Path
-from ucimlrepo import fetch_ucirepo
+
 import pandas as pd
+from ucimlrepo import fetch_ucirepo
 
 RAW_DIR = Path("data/raw")
 RAW_DIR.mkdir(parents=True, exist_ok=True)
