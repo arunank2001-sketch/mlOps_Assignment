@@ -1,2 +1,7 @@
+.venv/
 .venv_test/
+data/raw/
+data/processed/
 mlruns/
+__pycache__/
+*.pyc
