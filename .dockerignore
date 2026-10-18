@@ -1,0 +1,10 @@
+.venv/
+.venv_test/
+.venv_check/
+mlruns/
+data/
+notebooks/
+tests/
+__pycache__/
+*.pyc
+.git/
