@@ -1,13 +1,26 @@
+import logging
+import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import mlflow.sklearn
 import pandas as pd
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel, Field
-from pathlib import Path
 
-# MODEL_URI = "model_artifact"
-#MODEL_URI = "runs:/cc37b857bcf04fc8848c2818b23c67f7/model"  # replaced below
+LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_DIR / "api_requests.log"),
+        logging.StreamHandler(),
+    ],
+)
+logger = logging.getLogger("api")
 
 MODEL_URI = str(Path(__file__).resolve().parent.parent / "model_artifact")
 
@@ -38,6 +51,23 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Heart Disease Risk API", lifespan=lifespan)
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    latency_ms = (time.perf_counter() - start) * 1000
+    logger.info(
+        "method=%s path=%s status=%d latency_ms=%.2f",
+        request.method,
+        request.url.path,
+        response.status_code,
+        latency_ms,
+    )
+    return response
+
+
+Instrumentator().instrument(app).expose(app)
 
 
 @app.get("/health")
