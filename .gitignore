@@ -5,3 +5,5 @@ data/processed/
 mlruns/
 __pycache__/
 *.pyc
+mlflow.db
+*.tar
